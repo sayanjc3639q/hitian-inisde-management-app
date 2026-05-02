@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "268465556907",
+    "project_id": "hitian-inside-69e00",
+    "storage_bucket": "hitian-inside-69e00.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268465556907:android:2f38dd08ea58c3e5b316ee",
+        "android_client_info": {
+          "package_name": "com.example.hitian_inside"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARY7ERyXBgQ2XiPiz1HWtd6FNvxSBCMis"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
