@@ -3,6 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'notifications_page.dart';
+import 'user_service.dart';
+import 'idea_feedback_page.dart';
 
 class IdeasPage extends StatefulWidget {
   const IdeasPage({super.key});
@@ -11,133 +14,171 @@ class IdeasPage extends StatefulWidget {
   State<IdeasPage> createState() => _IdeasPageState();
 }
 
-class _IdeasPageState extends State<IdeasPage> {
+class _IdeasPageState extends State<IdeasPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   String _selectedCategory = 'All';
   final User? _user = FirebaseAuth.instance.currentUser;
   bool _isAdmin = false;
+  Stream<QuerySnapshot>? _ideasStream;
+
+  late ScrollController _scrollController;
+  bool _showBackToTop = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAdminStatus();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 300 && !_showBackToTop) {
+        setState(() => _showBackToTop = true);
+      } else if (_scrollController.offset <= 300 && _showBackToTop) {
+        setState(() => _showBackToTop = false);
+      }
+    });
+    _updateStream();
   }
 
-  void _checkAdminStatus() async {
-    if (_user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(_user?.uid).get();
-      if (mounted) {
-        setState(() {
-          _isAdmin = doc.data()?['isAdmin'] ?? false;
-        });
-      }
-    }
+  void _updateStream() {
+    setState(() {
+      _ideasStream = _selectedCategory == 'All' 
+        ? FirebaseFirestore.instance.collection('ideas').orderBy('timestamp', descending: true).snapshots()
+        : FirebaseFirestore.instance.collection('ideas').where('category', isEqualTo: _selectedCategory).orderBy('timestamp', descending: true).snapshots();
+    });
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(_user?.uid).snapshots(),
-      builder: (context, userSnapshot) {
+    super.build(context);
+    return ValueListenableBuilder<Map<String, dynamic>?>(
+      valueListenable: UserService().userDataNotifier,
+      builder: (context, data, _) {
+        final isAdmin = data?['role'] == 'admin';
+        _isAdmin = isAdmin; // Set state for use in _buildIdeaCard
+        
         String initials = "H";
-        if (userSnapshot.hasData && userSnapshot.data!.exists) {
-          String name = userSnapshot.data!.get('name') ?? "";
-          if (name.isNotEmpty) {
-            initials = name.split(' ').map((e) => e[0]).take(2).join().toUpperCase();
-          }
+        String name = data?['name'] ?? "";
+        if (name.isNotEmpty) {
+          initials = name.split(' ').map((e) => e[0]).take(2).join().toUpperCase();
         }
 
         return Scaffold(
           backgroundColor: const Color(0xFFFBFBFB),
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            surfaceTintColor: Colors.transparent,
-            leadingWidth: 60,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: CircleAvatar(
-                backgroundColor: const Color(0xFF4A0404),
-                radius: 18,
-                child: Text(
-                  initials,
+          body: NestedScrollView(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                pinned: true,
+                floating: true,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                surfaceTintColor: Colors.transparent,
+                expandedHeight: 240,
+                leadingWidth: 60,
+                leading: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Center(
+                    child: CircleAvatar(
+                      backgroundColor: const Color(0xFF4A0404),
+                      radius: 18,
+                      child: Text(
+                        initials,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text(
+                  'HITIAN INSIDE',
                   style: GoogleFonts.outfit(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 20,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage())),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 100, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Idea Box',
+                          style: GoogleFonts.outfit(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Pitch your next big concept to the Maroon Team.\nTop voted ideas get greenlit.',
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            title: Text(
-              'HITIAN INSIDE',
-              style: GoogleFonts.outfit(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                letterSpacing: 0.5,
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
-                onPressed: () {},
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Idea Box',
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16),
+                  child: ElevatedButton.icon(
+                    onPressed: _showSubmitIdeaDialog,
+                    icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+                    label: Text(
+                      'Submit Idea',
                       style: GoogleFonts.outfit(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1A1A1A),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Pitch your next big concept to the Maroon Team.\nTop voted ideas get greenlit.',
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        height: 1.4,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4A0404),
+                      minimumSize: const Size(double.infinity, 56),
+                      elevation: 4,
+                      shadowColor: const Color(0xFF4A0404).withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    
-                    // Submit Idea Button
-                    ElevatedButton.icon(
-                      onPressed: _showSubmitIdeaDialog,
-                      icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-                      label: Text(
-                        'Submit Idea',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4A0404),
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Categories
-                    SingleChildScrollView(
+                  ),
+                ),
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  child: Container(
+                    color: const Color(0xFFFBFBFB),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         children: [
                           _buildCategoryChip('All', _selectedCategory == 'All'),
@@ -148,42 +189,93 @@ class _IdeasPageState extends State<IdeasPage> {
                         ],
                       ),
                     ),
-                  ],
+                  ),
+                  minHeight: 60,
+                  maxHeight: 60,
                 ),
               ),
+            ],
+            body: StreamBuilder<QuerySnapshot>(
+              stream: _ideasStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('ideas').snapshots(),
+                    builder: (context, fallbackSnapshot) {
+                      if (fallbackSnapshot.hasError) {
+                        return Center(child: Text('Error: ${fallbackSnapshot.error}', style: GoogleFonts.outfit(color: Colors.red)));
+                      }
+                      if (fallbackSnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(color: Color(0xFF4A0404)));
+                      }
 
-              // Idea Cards List
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: _selectedCategory == 'All' 
-                    ? FirebaseFirestore.instance.collection('ideas').orderBy('timestamp', descending: true).snapshots()
-                    : FirebaseFirestore.instance.collection('ideas').where('category', isEqualTo: _selectedCategory).orderBy('timestamp', descending: true).snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Center(
-                        child: Text('No ideas found for this category.', style: GoogleFonts.outfit(color: Colors.grey)),
+                      final docs = fallbackSnapshot.data!.docs.where((doc) {
+                        if (_selectedCategory == 'All') return true;
+                        return (doc.data() as Map<String, dynamic>)['category'] == _selectedCategory;
+                      }).toList();
+
+                      docs.sort((a, b) {
+                        final tsA = (a.data() as Map<String, dynamic>)['timestamp'] as Timestamp?;
+                        final tsB = (b.data() as Map<String, dynamic>)['timestamp'] as Timestamp?;
+                        if (tsA == null || tsB == null) return 0;
+                        return tsB.compareTo(tsA);
+                      });
+
+                      if (docs.isEmpty) {
+                        return Center(child: Text('No ideas found.', style: GoogleFonts.outfit(color: Colors.grey)));
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        itemCount: docs.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _buildIdeaCard(docs[index]),
+                          );
+                        },
                       );
-                    }
+                    },
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFF4A0404)));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Text('No ideas found for this category.', style: GoogleFonts.outfit(color: Colors.grey)),
+                  );
+                }
 
-                    final ideas = snapshot.data!.docs;
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: ideas.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildIdeaCard(ideas[index]),
-                        );
-                      },
+                final ideas = snapshot.data!.docs;
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  itemCount: ideas.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildIdeaCard(ideas[index]),
                     );
                   },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                );
+              },
+            ),
+          ),
+          floatingActionButton: AnimatedScale(
+            scale: _showBackToTop ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
+            child: FloatingActionButton(
+              heroTag: 'ideas_back_to_top_unique',
+              onPressed: () {
+                _scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeOut,
+                );
+              },
+              backgroundColor: const Color(0xFF4A0404),
+              child: const Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 30),
+            ),
           ),
         );
       },
@@ -244,14 +336,14 @@ class _IdeasPageState extends State<IdeasPage> {
               onPressed: () async {
                 if (titleController.text.isEmpty || descController.text.isEmpty) return;
                 
-                final userDoc = await FirebaseFirestore.instance.collection('users').doc(_user?.uid).get();
-                final name = userDoc.data()?['name'] ?? 'Unknown';
+                final userData = UserService().currentUserData;
+                final name = userData?['name'] ?? 'Unknown';
 
                 await FirebaseFirestore.instance.collection('ideas').add({
                   'title': titleController.text,
                   'description': descController.text,
                   'category': category,
-                  'authorId': _user?.uid,
+                  'authorId': FirebaseAuth.instance.currentUser?.uid,
                   'authorName': name,
                   'status': 'submitted',
                   'upvotes': [],
@@ -284,6 +376,7 @@ class _IdeasPageState extends State<IdeasPage> {
           setState(() {
             _selectedCategory = label;
           });
+          _updateStream();
         },
         selectedColor: const Color(0xFFFFD56B),
         backgroundColor: const Color(0xFFF5E6E6),
@@ -314,10 +407,10 @@ class _IdeasPageState extends State<IdeasPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _getStatusColor(status).withValues(alpha: 0.5), width: 1.5),
+        border: Border.all(color: _getStatusColor(status).withOpacity(0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -337,7 +430,7 @@ class _IdeasPageState extends State<IdeasPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(status).withValues(alpha: 0.1),
+                        color: _getStatusColor(status).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -381,7 +474,7 @@ class _IdeasPageState extends State<IdeasPage> {
                 const SizedBox(height: 16),
                 
                 // Criticism Section
-                _buildCriticismSection(doc.id),
+                _buildCriticismSection(doc.id, data['title'] ?? 'Idea'),
               ],
             ),
           ),
@@ -444,74 +537,62 @@ class _IdeasPageState extends State<IdeasPage> {
     );
   }
 
-  Widget _buildCriticismSection(String ideaId) {
-    final commentController = TextEditingController();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Criticism & Feedback', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('ideas').doc(ideaId).collection('criticisms').orderBy('timestamp', descending: true).limit(3).snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) return const SizedBox();
-            return Column(
-              children: snapshot.data!.docs.map((d) {
-                final cData = d.data() as Map<String, dynamic>;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: Row(
-                    children: [
-                      Text('${cData['authorName']}: ', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
-                      Expanded(child: Text(cData['text'] ?? '', style: GoogleFonts.outfit(fontSize: 12), overflow: TextOverflow.ellipsis)),
-                    ],
-                  ),
-                );
-              }).toList(),
-            );
-          },
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: commentController,
-                decoration: InputDecoration(
-                  hintText: 'Add criticism...',
-                  hintStyle: GoogleFonts.outfit(fontSize: 12),
-                  isDense: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+  Widget _buildCriticismSection(String ideaId, String ideaTitle) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('ideas').doc(ideaId).collection('criticisms').snapshots(),
+      builder: (context, snapshot) {
+        final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+        
+        return InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => IdeaFeedbackPage(ideaId: ideaId, ideaTitle: ideaTitle),
+            ),
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.forum_outlined, size: 18, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Feedback & Criticism',
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (count > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4A0404),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          count.toString(),
+                          style: GoogleFonts.outfit(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
                 ),
-              ),
+                Icon(Icons.chevron_right, size: 20, color: Colors.grey[400]),
+              ],
             ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.send, size: 20),
-              onPressed: () async {
-                if (commentController.text.isEmpty) return;
-                final userDoc = await FirebaseFirestore.instance.collection('users').doc(_user?.uid).get();
-                final name = userDoc.data()?['name'] ?? 'Unknown';
-                
-                await FirebaseFirestore.instance.collection('ideas').doc(ideaId).collection('criticisms').add({
-                  'text': commentController.text,
-                  'authorId': _user?.uid,
-                  'authorName': name,
-                  'timestamp': FieldValue.serverTimestamp(),
-                });
-                
-                // Update status to pending if it was submitted
-                final ideaDoc = await FirebaseFirestore.instance.collection('ideas').doc(ideaId).get();
-                if (ideaDoc.data()?['status'] == 'submitted') {
-                  await FirebaseFirestore.instance.collection('ideas').doc(ideaId).update({'status': 'pending'});
-                }
-                
-                commentController.clear();
-              },
-            ),
-          ],
-        ),
-      ],
+          ),
+        );
+      },
     );
   }
 
@@ -527,34 +608,49 @@ class _IdeasPageState extends State<IdeasPage> {
   }
 
   void _vote(String ideaId, bool isUpvote) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
+    final uid = user.uid;
     final docRef = FirebaseFirestore.instance.collection('ideas').doc(ideaId);
-    final doc = await docRef.get();
-    final data = doc.data() as Map<String, dynamic>;
-    List upvotes = data['upvotes'] ?? [];
-    List downvotes = data['downvotes'] ?? [];
-    final uid = _user?.uid;
+    
+    try {
+      final doc = await docRef.get();
+      if (!doc.exists) return;
+      
+      final data = doc.data() as Map<String, dynamic>;
+      List upvotes = List.from(data['upvotes'] ?? []);
+      List downvotes = List.from(data['downvotes'] ?? []);
 
-    if (isUpvote) {
-      if (upvotes.contains(uid)) {
-        upvotes.remove(uid);
+      if (isUpvote) {
+        if (upvotes.contains(uid)) {
+          upvotes.remove(uid);
+        } else {
+          upvotes.add(uid);
+          downvotes.remove(uid);
+        }
       } else {
-        upvotes.add(uid);
-        downvotes.remove(uid);
+        if (downvotes.contains(uid)) {
+          downvotes.remove(uid);
+        } else {
+          downvotes.add(uid);
+          upvotes.remove(uid);
+        }
       }
-    } else {
-      if (downvotes.contains(uid)) {
-        downvotes.remove(uid);
-      } else {
-        downvotes.add(uid);
-        upvotes.remove(uid);
+
+      await docRef.update({
+        'upvotes': upvotes,
+        'downvotes': downvotes,
+        'status': data['status'] == 'submitted' ? 'pending' : data['status'],
+      });
+    } catch (e) {
+      debugPrint('Error voting: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error voting: $e')),
+        );
       }
     }
-
-    await docRef.update({
-      'upvotes': upvotes,
-      'downvotes': downvotes,
-      'status': data['status'] == 'submitted' ? 'pending' : data['status'],
-    });
   }
 
   void _deleteIdea(String ideaId) {
@@ -575,5 +671,35 @@ class _IdeasPageState extends State<IdeasPage> {
         ],
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
   }
 }

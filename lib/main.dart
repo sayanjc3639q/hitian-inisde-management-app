@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth_wrapper.dart';
 import 'firebase_options.dart';
+import 'splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4A0404)),
         useMaterial3: true,
       ),
-      home: const AuthWrapper(),
+      home: const SplashScreen(),
     );
   }
 }

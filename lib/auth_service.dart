@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'generated/hitian_connector.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _connector = HitianConnectorConnector.instance;
 
   // Stream for auth state changes
   Stream<User?> get user => _auth.authStateChanges();
@@ -24,7 +26,7 @@ class AuthService {
       );
       User? user = result.user;
 
-      // Create a new document for the user with the uid
+      // Create a new document for the user in Firestore (keep for now)
       if (user != null) {
         await _firestore.collection('users').doc(user.uid).set({
           'name': name,
@@ -37,6 +39,17 @@ class AuthService {
           'tasksCount': 0,
           'eventsCount': 0,
         });
+
+        // ALSO: Create user in SQL via Data Connect
+        await _connector.upsertUser(
+          id: user.uid,
+          name: name,
+          email: email,
+        )
+        .rollNumber(rollNumber)
+        .domain(domain)
+        .batch(batch)
+        .execute();
       }
       return result;
     } catch (e) {
@@ -61,12 +74,35 @@ class AuthService {
     required String domain,
     required int batch,
   }) async {
+    // Update Firestore
     await _firestore.collection('users').doc(uid).update({
       'name': name,
       'rollNumber': rollNumber,
       'domain': domain,
       'batch': batch,
     });
+
+    // Update SQL
+    await _connector.upsertUser(
+      id: uid,
+      name: name,
+      email: _auth.currentUser?.email ?? '',
+    )
+    .rollNumber(rollNumber)
+    .domain(domain)
+    .batch(batch)
+    .execute();
+  }
+
+  // Update profile picture
+  Future<void> updateProfilePicture(String uid, String? url) async {
+    // Update Firestore
+    await _firestore.collection('users').doc(uid).update({
+      'profilePic': url,
+    });
+
+    // Update SQL
+    await _connector.updateProfilePic(id: uid).url(url).execute();
   }
 
   // Sign out

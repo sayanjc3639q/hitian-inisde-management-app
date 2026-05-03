@@ -74,10 +74,25 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             children: [
               // Logo/Title
-              const CircleAvatar(
-                radius: 50,
-                backgroundColor: Color(0xFF4A0404),
-                child: Icon(Icons.ac_unit, color: Colors.white, size: 50),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4A0404).withOpacity(0.1),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/HitianINSIDElogo.png',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               Text(

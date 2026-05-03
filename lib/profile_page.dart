@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'auth_service.dart';
+import 'my_activity_pages.dart';
+import 'settings_page.dart';
+import 'user_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,9 +16,12 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   final AuthService _auth = AuthService();
   final User? _user = FirebaseAuth.instance.currentUser;
+  bool _isUploading = false;
 
   String _calculateYear(int startYear) {
     DateTime now = DateTime.now();
@@ -33,26 +41,193 @@ class _ProfilePageState extends State<ProfilePage> {
     return 'Alumni';
   }
 
+  Future<void> _handleImageAction(String? currentUrl) async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndUploadImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndUploadImage(ImageSource.camera);
+              },
+            ),
+            if (currentUrl != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Remove Profile Photo', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _removeProfilePic();
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndUploadImage(ImageSource source) async {
+    try {
+      // Handle Permissions
+      if (source == ImageSource.camera) {
+        var status = await Permission.camera.request();
+        if (status.isPermanentlyDenied) {
+          if (mounted) _showPermissionDialog('Camera');
+          return;
+        }
+        if (!status.isGranted) return;
+      } else {
+        // For Gallery
+        var status = await Permission.photos.request();
+        if (status.isPermanentlyDenied) {
+          if (mounted) _showPermissionDialog('Photos');
+          return;
+        }
+        // On some Android versions, it might be storage
+        if (status.isDenied) {
+          await Permission.storage.request();
+        }
+      }
+
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+
+      if (image == null) return;
+
+      setState(() => _isUploading = true);
+
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_pics')
+          .child('${_user!.uid}.jpg');
+
+      // Upload file
+      final bytes = await image.readAsBytes();
+      await storageRef.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+      
+      final downloadUrl = await storageRef.getDownloadURL();
+
+      // Update Firestore
+      await _auth.updateProfilePicture(_user.uid, downloadUrl);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile picture updated successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error uploading image: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  void _showPermissionDialog(String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$type Permission Required'),
+        content: Text('Please enable $type access in settings to upload a profile photo.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              openAppSettings();
+              Navigator.pop(context);
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeProfilePic() async {
+    try {
+      setState(() => _isUploading = true);
+      
+      // Delete from storage
+      try {
+        await FirebaseStorage.instance
+            .ref()
+            .child('profile_pics')
+            .child('${_user!.uid}.jpg')
+            .delete();
+      } catch (_) {
+        // Ignore if file doesn't exist
+      }
+
+      // Update Firestore
+      await _auth.updateProfilePicture(_user!.uid, null);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile picture removed.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error removing image: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(_user?.uid).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) return const Scaffold(body: Center(child: Text('Something went wrong')));
-        if (snapshot.connectionState == ConnectionState.waiting) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    super.build(context);
+    if (_user == null) {
+      return const Scaffold(body: Center(child: Text('User not logged in')));
+    }
 
-        Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
-        String name = data['name'] ?? 'No Name';
-        String domain = data['domain'] ?? 'No Domain';
-        String rollNumber = data['rollNumber'] ?? 'No Roll #';
-        String email = data['email'] ?? 'No Email';
-        int batch = data['batch'] ?? 2025;
-        
-        String yearString = _calculateYear(batch);
-        
-        int ideasCount = data['ideasCount'] ?? 0;
-        int tasksCount = data['tasksCount'] ?? 0;
-        int eventsCount = data['eventsCount'] ?? 0;
+    return ValueListenableBuilder<Map<String, dynamic>?>(
+      valueListenable: UserService().userDataNotifier,
+      builder: (context, data, _) {
+        if (data == null) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        final name = data['name'] ?? 'No Name';
+        final domain = data['domain'] ?? 'No Domain';
+        final rollNumber = data['rollNumber'] ?? 'No Roll #';
+        final email = data['email'] ?? 'No Email';
+        final profilePic = data['profilePic'];
+        final dynamic batchVal = data['batch'];
+        final int batch = batchVal is int ? batchVal : int.tryParse(batchVal?.toString() ?? '2025') ?? 2025;
+
+        final yearString = _calculateYear(batch);
 
         return Scaffold(
           backgroundColor: const Color(0xFFFBFBFB),
@@ -72,7 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.settings_outlined, color: Colors.black),
-                onPressed: () {},
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage())),
               ),
               const SizedBox(width: 8),
             ],
@@ -81,31 +256,16 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               children: [
                 const SizedBox(height: 24),
-                // User Header
-                _buildProfileHeader(name, '$yearString • $domain'),
+                _buildProfileHeader(name, '$yearString • $domain', profilePic),
                 const SizedBox(height: 32),
-                
-                // Stats Row
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildStatItem('Ideas', ideasCount.toString()),
-                      _buildStatItem('Tasks', tasksCount.toString()),
-                      _buildStatItem('Events', eventsCount.toString()),
-                    ],
-                  ),
-                ),
+                _StatsRow(uid: _user.uid),
                 const SizedBox(height: 32),
-
-                // Menu Options
                 _buildMenuSection(
                   title: 'Personal Information',
                   items: [
                     _buildMenuItem(
-                      Icons.person_outline, 
-                      'Account Details', 
+                      Icons.person_outline,
+                      'Account Details',
                       'Edit your profile',
                       onTap: () => _showEditDialog(name, rollNumber, domain, batch),
                     ),
@@ -118,14 +278,27 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildMenuSection(
                   title: 'My Activity',
                   items: [
-                    _buildMenuItem(Icons.lightbulb_outline, 'My Submitted Ideas', 'Track your pitches'),
-                    _buildMenuItem(Icons.assignment_outlined, 'Completed Tasks', 'View history'),
-                    _buildMenuItem(Icons.calendar_today_outlined, 'Past Events', 'Member history'),
+                    _buildMenuItem(
+                      Icons.lightbulb_outline,
+                      'My Submitted Ideas',
+                      'Track your pitches',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Ideas', uid: _user!.uid))),
+                    ),
+                    _buildMenuItem(
+                      Icons.assignment_outlined,
+                      'Completed Tasks',
+                      'View history',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Tasks', uid: _user!.uid))),
+                    ),
+                    _buildMenuItem(
+                      Icons.calendar_today_outlined,
+                      'Past Events',
+                      'Member history',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Events', uid: _user!.uid))),
+                    ),
                   ],
                 ),
-                
                 const SizedBox(height: 32),
-                // Logout Button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextButton(
@@ -184,7 +357,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: selectedDomain,
+                  value: selectedDomain,
                   decoration: const InputDecoration(labelText: 'Domain'),
                   items: [
                     'Public Relation Management',
@@ -198,7 +371,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  initialValue: selectedBatch,
+                  value: selectedBatch,
                   decoration: const InputDecoration(labelText: 'Batch'),
                   items: [2022, 2023, 2024, 2025, 2026].map((y) => DropdownMenuItem(value: y, child: Text('Batch $y-${y + 1}', style: GoogleFonts.outfit(fontSize: 14)))).toList(),
                   onChanged: (val) => setDialogState(() => selectedBatch = val!),
@@ -233,31 +406,41 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfileHeader(String name, String domain) {
+  Widget _buildProfileHeader(String name, String domain, String? profilePic) {
     return Column(
       children: [
         Stack(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF4A0404), width: 3),
-              ),
-              child: const CircleAvatar(
-                radius: 60,
-                backgroundImage: AssetImage('assets/images/user_avatar.png'),
+            GestureDetector(
+              onTap: () => _handleImageAction(profilePic),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF4A0404), width: 3),
+                ),
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage: profilePic != null ? NetworkImage(profilePic) : null,
+                  child: profilePic == null && !_isUploading
+                      ? const Icon(Icons.person, size: 60, color: Colors.grey)
+                      : (_isUploading ? const CircularProgressIndicator(color: Color(0xFF4A0404)) : null),
+                ),
               ),
             ),
             Positioned(
               bottom: 0,
               right: 4,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4A0404),
-                  shape: BoxShape.circle,
+              child: GestureDetector(
+                onTap: () => _handleImageAction(profilePic),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4A0404),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
                 ),
-                child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
               ),
             ),
           ],
@@ -283,37 +466,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.outfit(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF4A0404),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.outfit(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildMenuSection({required String title, required List<Widget> items}) {
     return Padding(
@@ -372,6 +524,63 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       trailing: onTap != null ? const Icon(Icons.chevron_right, color: Colors.grey, size: 20) : null,
       onTap: onTap,
+    );
+  }
+}
+
+class _StatsRow extends StatelessWidget {
+  final String uid;
+  const _StatsRow({required this.uid});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiStreamBuilder(
+      uid: uid,
+      builder: (context, ideasCount, tasksCount, eventsCount) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildStatItem('Ideas', ideasCount.toString()),
+              _buildStatItem('Tasks', tasksCount.toString()),
+              _buildStatItem('Events', eventsCount.toString()),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.outfit(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF4A0404),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

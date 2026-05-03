@@ -1,0 +1,38 @@
+# Firebase Data Connect Schema
+# This defines your PostgreSQL database structure.
+
+type User @table(key: "id") {
+  id: String! # Firebase Auth UID
+  name: String!
+  email: String!
+  rollNumber: String
+  domain: String
+  batch: Int
+  profilePic: String
+  role: String @default(value: "member")
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Idea @table(key: "id") {
+  id: UUID! @default(expr: "uuidV4()")
+  title: String!
+  description: String!
+  category: String!
+  author: User!
+  status: String! @default(value: "submitted")
+  timestamp: Timestamp! @default(expr: "request.time")
+}
+
+type Vote @table(key: ["idea", "user"]) {
+  idea: Idea!
+  user: User!
+  type: String! # 'up' or 'down'
+}
+
+type Criticism @table(key: "id") {
+  id: UUID! @default(expr: "uuidV4()")
+  idea: Idea!
+  user: User!
+  content: String!
+  timestamp: Timestamp! @default(expr: "request.time")
+}

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat_detail_page.dart';
+import 'notifications_page.dart';
+import 'user_service.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -11,20 +13,22 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   final User? _user = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(_user?.uid).snapshots(),
-      builder: (context, snapshot) {
+    super.build(context);
+    return ValueListenableBuilder<Map<String, dynamic>?>(
+      valueListenable: UserService().userDataNotifier,
+      builder: (context, data, _) {
         String initials = "H";
-        if (snapshot.hasData && snapshot.data!.exists) {
-          String name = snapshot.data!.get('name') ?? "";
-          if (name.isNotEmpty) {
-            initials = name.split(' ').map((e) => e[0]).take(2).join().toUpperCase();
-          }
+        Timestamp? createdAt = data?['createdAt'] as Timestamp?;
+        String name = data?['name'] ?? "";
+        if (name.isNotEmpty) {
+          initials = name.split(' ').map((e) => e[0]).take(2).join().toUpperCase();
         }
 
         return Scaffold(
@@ -62,7 +66,7 @@ class _ChatPageState extends State<ChatPage> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
-                onPressed: () {},
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage())),
               ),
               const SizedBox(width: 8),
             ],
@@ -94,16 +98,16 @@ class _ChatPageState extends State<ChatPage> {
                   // Group Categories
                   _buildCategorySection(context, 'Domain Groups', [
                     'Public Relation Management', 'Content Writer', 'Graphic Designer', 'Photographer', 'Web/App Developer', 'Video Editor'
-                  ]),
+                  ], createdAt),
                   _buildCategorySection(context, 'Year Groups', [
                     'Year 1', 'Year 2', 'Year 3', 'Year 4'
-                  ]),
+                  ], createdAt),
                   _buildCategorySection(context, 'Combined Groups', [
                     'Combined 1+2', 'Combined 1+2+3', 'Combined All'
-                  ]),
+                  ], createdAt),
                   _buildCategorySection(context, 'Special Groups', [
                     'Common', 'Alumni'
-                  ]),
+                  ], createdAt),
                   
                   const SizedBox(height: 80), // Space for FAB
                 ],
@@ -111,6 +115,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'chat_fab',
             onPressed: () {},
             backgroundColor: const Color(0xFF4A0404),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -123,7 +128,7 @@ class _ChatPageState extends State<ChatPage> {
 
 
 
-  Widget _buildCategorySection(BuildContext context, String title, List<String> groupIds) {
+  Widget _buildCategorySection(BuildContext context, String title, List<String> groupIds, Timestamp? createdAt) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,7 +184,7 @@ class _ChatPageState extends State<ChatPage> {
 
               return Column(
                 children: [
-                  _buildGroupTile(context, id, query),
+                  _buildGroupTile(context, id, query, createdAt),
                   if (!isLast) const Divider(height: 1, indent: 70),
                 ],
               );
@@ -190,53 +195,99 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildGroupTile(BuildContext context, String label, Query query) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDE8E8),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Icon(Icons.groups_outlined, color: Color(0xFF4A0404), size: 24),
-      ),
-      title: Text(
-        label,
-        style: GoogleFonts.outfit(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-      ),
-      subtitle: FutureBuilder<AggregateQuerySnapshot>(
-        future: query.count().get(),
-        builder: (context, snapshot) {
-          String memberText = snapshot.hasData ? '${snapshot.data!.count} members' : 'Loading members...';
-          return Text(
-            memberText,
-            style: GoogleFonts.outfit(
-              fontSize: 13,
-              color: Colors.grey[600],
-            ),
-          );
-        },
-      ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-      onTap: () async {
-        final countSnapshot = await query.count().get();
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatDetailPage(
-              title: label,
-              subtitle: '${countSnapshot.count} Members',
-              chatId: label.replaceAll('/', '_'),
-              membersQuery: query,
-              icon: Icons.groups_outlined,
-            ),
-          ),
+  Widget _buildGroupTile(BuildContext context, String label, Query query, Timestamp? createdAt) {
+    final chatId = label.replaceAll('/', '_');
+    
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(_user?.uid)
+          .collection('last_reads')
+          .doc(chatId)
+          .snapshots(),
+      builder: (context, lastReadSnapshot) {
+        final lastReadData = lastReadSnapshot.data?.data() as Map<String, dynamic>?;
+        final lastRead = lastReadData?['timestamp'] as Timestamp?;
+        final effectiveLastRead = lastRead ?? createdAt ?? Timestamp.fromMillisecondsSinceEpoch(0);
+        
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('groups')
+              .doc(chatId)
+              .collection('messages')
+              .where('timestamp', isGreaterThan: effectiveLastRead)
+              .snapshots(),
+          builder: (context, messagesSnapshot) {
+            final unreadMessages = messagesSnapshot.data?.docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return data['senderId'] != _user?.uid;
+            }) ?? [];
+            final unreadCount = unreadMessages.length;
+            
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDE8E8),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.groups_outlined, color: Color(0xFF4A0404), size: 24),
+              ),
+              title: Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                'Group Chat',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (unreadCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A0404),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        unreadCount.toString(),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                ],
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatDetailPage(
+                      title: label,
+                      subtitle: 'Group Chat',
+                      chatId: chatId,
+                      membersQuery: query,
+                      icon: Icons.groups_outlined,
+                    ),
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );

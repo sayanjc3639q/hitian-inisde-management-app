@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'notifications_page.dart';
+import 'user_service.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -11,39 +13,46 @@ class EventsPage extends StatefulWidget {
   State<EventsPage> createState() => _EventsPageState();
 }
 
-class _EventsPageState extends State<EventsPage> {
+class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   String _selectedFilter = 'All Events';
   final User? _user = FirebaseAuth.instance.currentUser;
   bool _isAdmin = false;
+  Stream<QuerySnapshot>? _eventsStream;
 
   @override
   void initState() {
     super.initState();
-    _checkAdminStatus();
+    _updateStream();
   }
 
-  void _checkAdminStatus() async {
-    if (_user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(_user?.uid).get();
-      if (mounted) {
-        setState(() {
-          _isAdmin = doc.data()?['isAdmin'] ?? false;
-        });
+  void _updateStream() {
+    setState(() {
+      var query = FirebaseFirestore.instance.collection('events').orderBy('dateTime', descending: false);
+      if (_selectedFilter == 'Shoots') {
+        query = query.where('category', isEqualTo: 'Shoot');
+      } else if (_selectedFilter == 'Meetings') {
+        query = query.where('category', isEqualTo: 'Meeting');
+      } else if (_selectedFilter == 'Deadlines') {
+        query = query.where('category', isEqualTo: 'Deadline');
       }
-    }
+      _eventsStream = query.snapshots();
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(_user?.uid).snapshots(),
-      builder: (context, userSnapshot) {
+    super.build(context);
+    return ValueListenableBuilder<Map<String, dynamic>?>(
+      valueListenable: UserService().userDataNotifier,
+      builder: (context, data, _) {
         String initials = "H";
-        if (userSnapshot.hasData && userSnapshot.data!.exists) {
-          String name = userSnapshot.data!.get('name') ?? "";
-          if (name.isNotEmpty) {
-            initials = name.split(' ').map((e) => e[0]).take(2).join().toUpperCase();
-          }
+        String name = data?['name'] ?? "";
+        bool isAdmin = data?['isAdmin'] ?? false;
+        if (name.isNotEmpty) {
+          initials = name.split(' ').map((e) => e[0]).take(2).join().toUpperCase();
         }
 
         return Scaffold(
@@ -81,7 +90,7 @@ class _EventsPageState extends State<EventsPage> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
-                onPressed: () {},
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage())),
               ),
               const SizedBox(width: 8),
             ],
@@ -126,8 +135,16 @@ class _EventsPageState extends State<EventsPage> {
               // Events List
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: _getEventsStream(),
+                  stream: _eventsStream,
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text('Fetching error: ${snapshot.error}', textAlign: TextAlign.center, style: GoogleFonts.outfit(color: Colors.red)),
+                        ),
+                      );
+                    }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -162,6 +179,7 @@ class _EventsPageState extends State<EventsPage> {
           ),
           floatingActionButton: _isAdmin 
             ? FloatingActionButton.extended(
+                heroTag: 'events_fab_unique',
                 onPressed: _showAddEventDialog,
                 backgroundColor: const Color(0xFF4A0404),
                 icon: const Icon(Icons.add, color: Colors.white),
@@ -290,6 +308,7 @@ class _EventsPageState extends State<EventsPage> {
         setState(() {
           _selectedFilter = label;
         });
+        _updateStream();
       },
       selectedColor: const Color(0xFF4A0404),
       backgroundColor: const Color(0xFFFDE8E8),
@@ -323,7 +342,7 @@ class _EventsPageState extends State<EventsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +422,7 @@ class _EventsPageState extends State<EventsPage> {
             ],
           ),
           const SizedBox(width: 20),
-          Container(width: 1, height: 40, color: const Color(0xFF4A0404).withValues(alpha: 0.2)),
+          Container(width: 1, height: 40, color: const Color(0xFF4A0404).withOpacity(0.2)),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -411,7 +430,7 @@ class _EventsPageState extends State<EventsPage> {
               children: [
                 Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF4A0404))),
                 const SizedBox(height: 4),
-                Text('Deadline: $time', style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF4A0404).withValues(alpha: 0.7))),
+                Text('Deadline: $time', style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF4A0404).withOpacity(0.7))),
               ],
             ),
           ),

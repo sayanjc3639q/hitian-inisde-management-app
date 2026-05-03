@@ -1,0 +1,11 @@
+specVersion: "v1"
+serviceId: "hitian_inside_service"
+location: "us-central1"
+schemas:
+  - source: "./schema"
+    datasource:
+      postgresql:
+        database: "hitian_inside_db"
+        cloudSql:
+          instanceId: "hitian-inside-postgres"
+connectorDirs: ["./connector"]

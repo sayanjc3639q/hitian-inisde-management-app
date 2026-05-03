@@ -161,7 +161,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: const Color(0xFF4A0404).withValues(alpha: 0.1),
+                            backgroundColor: const Color(0xFF4A0404).withOpacity(0.1),
                             child: Text(
                               initial,
                               style: GoogleFonts.outfit(
