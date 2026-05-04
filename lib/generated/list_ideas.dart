@@ -2,10 +2,15 @@ part of 'hitian_connector.dart';
 
 class ListIdeasVariablesBuilder {
   Optional<String> _category = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _authorId = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;
   ListIdeasVariablesBuilder category(String? t) {
    _category.value = t;
+   return this;
+  }
+  ListIdeasVariablesBuilder authorId(String? t) {
+   _authorId.value = t;
    return this;
   }
 
@@ -17,7 +22,7 @@ class ListIdeasVariablesBuilder {
   }
 
   QueryRef<ListIdeasData, ListIdeasVariables> ref() {
-    ListIdeasVariables vars= ListIdeasVariables(category: _category,);
+    ListIdeasVariables vars= ListIdeasVariables(category: _category,authorId: _authorId,);
     return _dataConnect.query("listIdeas", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -314,12 +319,17 @@ class ListIdeasData {
 @immutable
 class ListIdeasVariables {
   late final Optional<String>category;
+  late final Optional<String>authorId;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   ListIdeasVariables.fromJson(Map<String, dynamic> json) {
   
   
     category = Optional.optional(nativeFromJson, nativeToJson);
     category.value = json['category'] == null ? null : nativeFromJson<String>(json['category']);
+  
+  
+    authorId = Optional.optional(nativeFromJson, nativeToJson);
+    authorId.value = json['authorId'] == null ? null : nativeFromJson<String>(json['authorId']);
   
   }
   @override
@@ -332,11 +342,12 @@ class ListIdeasVariables {
     }
 
     final ListIdeasVariables otherTyped = other as ListIdeasVariables;
-    return category == otherTyped.category;
+    return category == otherTyped.category && 
+    authorId == otherTyped.authorId;
     
   }
   @override
-  int get hashCode => category.hashCode;
+  int get hashCode => Object.hashAll([category.hashCode, authorId.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -344,11 +355,15 @@ class ListIdeasVariables {
     if(category.state == OptionalState.set) {
       json['category'] = category.toJson();
     }
+    if(authorId.state == OptionalState.set) {
+      json['authorId'] = authorId.toJson();
+    }
     return json;
   }
 
   ListIdeasVariables({
     required this.category,
+    required this.authorId,
   });
 }
 

@@ -4,10 +4,13 @@
 HitianConnectorConnector.instance.upsertUser(upsertUserVariables).execute();
 HitianConnectorConnector.instance.updateProfilePic(updateProfilePicVariables).execute();
 HitianConnectorConnector.instance.getUser(getUserVariables).execute();
+HitianConnectorConnector.instance.listUsers(listUsersVariables).execute();
+HitianConnectorConnector.instance.listAllUsers().execute();
 HitianConnectorConnector.instance.createIdea(createIdeaVariables).execute();
 HitianConnectorConnector.instance.voteIdea(voteIdeaVariables).execute();
 HitianConnectorConnector.instance.addCriticism(addCriticismVariables).execute();
-HitianConnectorConnector.instance.listIdeas(listIdeasVariables).execute();
+HitianConnectorConnector.instance.deleteIdea(deleteIdeaVariables).execute();
+HitianConnectorConnector.instance.updateIdeaStatus(updateIdeaStatusVariables).execute();
 
 ```
 
@@ -20,8 +23,8 @@ Optional fields can be discovered based on classes that have `Optional` object t
 This is an example of a mutation with an optional field:
 
 ```dart
-await HitianConnectorConnector.instance.listIdeas({ ... })
-.category(...)
+await HitianConnectorConnector.instance.updateMessage({ ... })
+.metadata(...)
 .execute();
 ```
 

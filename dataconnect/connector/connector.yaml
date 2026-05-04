@@ -1,5 +1,0 @@
-connectorId: "hitian_connector"
-generate:
-  dartSdk:
-    outputDir: "../../lib/generated"
-    package: "hitian_data"

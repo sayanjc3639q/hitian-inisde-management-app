@@ -1,17 +1,14 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_data_connect/firebase_data_connect.dart';
 import 'package:flutter/foundation.dart';
-import 'generated/hitian_connector.dart';
 
 class UserService {
   static final UserService _instance = UserService._internal();
   factory UserService() => _instance;
 
-  final _connector = HitianConnectorConnector.instance;
   StreamSubscription<User?>? _authSubscription;
-  StreamSubscription<QueryResult<GetUserData, GetUserVariables>>? _userDocSubscription;
+  StreamSubscription<DocumentSnapshot>? _userDocSubscription;
 
   UserService._internal() {
     _authSubscription?.cancel();
@@ -34,36 +31,20 @@ class UserService {
   ValueNotifier<String?> get fetchingErrorNotifier => _fetchingError;
   
   Map<String, dynamic>? get currentUserData => _userData.value;
-  bool get isAdmin => (_userData.value?['role'] ?? _userData.value?['role']) == 'admin';
+  bool get isAdmin => _userData.value?['isAdmin'] ?? false;
 
   void _startListening(String uid) {
     _userDocSubscription?.cancel();
-    
-    // Use Data Connect subscription
-    _userDocSubscription = _connector.getUser(id: uid).ref().subscribe().listen((result) {
+    _userDocSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .listen((snapshot) {
       _fetchingError.value = null;
-      final user = result.data.user;
-      if (user != null) {
-        // Map GetUserUser to Map<String, dynamic> for UI compatibility
-        _userData.value = {
-          'id': user.id,
-          'name': user.name,
-          'email': user.email,
-          'rollNumber': user.rollNumber,
-          'domain': user.domain,
-          'batch': user.batch,
-          'profilePic': user.profilePic,
-          'role': user.role,
-          'createdAt': user.createdAt,
-          // Add placeholders for counts which might still be in Firestore for now
-          'ideasCount': 0,
-          'tasksCount': 0,
-          'eventsCount': 0,
-        };
+      if (snapshot.exists) {
+        _userData.value = snapshot.data() as Map<String, dynamic>;
       } else {
-        _fetchingError.value = "User not found in SQL database.";
-        // Fallback: If not in SQL, it might be an old user not yet migrated.
-        // We could trigger a migration here or just show the error.
+        _fetchingError.value = "User document does not exist in Firestore.";
       }
     }, onError: (error) {
       _fetchingError.value = error.toString();
