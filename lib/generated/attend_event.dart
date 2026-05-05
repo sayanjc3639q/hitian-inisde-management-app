@@ -59,10 +59,10 @@ class AttendEventEventAttendeeInsert {
 
 @immutable
 class AttendEventData {
-  final AttendEventEventAttendeeInsert eventAttendee_insert;
+  final AttendEventEventAttendeeInsert eventAttendeeInsert;
   AttendEventData.fromJson(dynamic json):
   
-  eventAttendee_insert = AttendEventEventAttendeeInsert.fromJson(json['eventAttendee_insert']);
+  eventAttendeeInsert = AttendEventEventAttendeeInsert.fromJson(json['eventAttendee_insert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -73,21 +73,21 @@ class AttendEventData {
     }
 
     final AttendEventData otherTyped = other as AttendEventData;
-    return eventAttendee_insert == otherTyped.eventAttendee_insert;
+    return eventAttendeeInsert == otherTyped.eventAttendeeInsert;
     
   }
   @override
-  int get hashCode => eventAttendee_insert.hashCode;
+  int get hashCode => eventAttendeeInsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['eventAttendee_insert'] = eventAttendee_insert.toJson();
+    json['eventAttendee_insert'] = eventAttendeeInsert.toJson();
     return json;
   }
 
   const AttendEventData({
-    required this.eventAttendee_insert,
+    required this.eventAttendeeInsert,
   });
 }
 
