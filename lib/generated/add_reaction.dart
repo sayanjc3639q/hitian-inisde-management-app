@@ -60,10 +60,10 @@ class AddReactionMessageReactionUpsert {
 
 @immutable
 class AddReactionData {
-  final AddReactionMessageReactionUpsert messageReaction_upsert;
+  final AddReactionMessageReactionUpsert messageReactionUpsert;
   AddReactionData.fromJson(dynamic json):
   
-  messageReaction_upsert = AddReactionMessageReactionUpsert.fromJson(json['messageReaction_upsert']);
+  messageReactionUpsert = AddReactionMessageReactionUpsert.fromJson(json['messageReaction_upsert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -74,21 +74,21 @@ class AddReactionData {
     }
 
     final AddReactionData otherTyped = other as AddReactionData;
-    return messageReaction_upsert == otherTyped.messageReaction_upsert;
+    return messageReactionUpsert == otherTyped.messageReactionUpsert;
     
   }
   @override
-  int get hashCode => messageReaction_upsert.hashCode;
+  int get hashCode => messageReactionUpsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['messageReaction_upsert'] = messageReaction_upsert.toJson();
+    json['messageReaction_upsert'] = messageReactionUpsert.toJson();
     return json;
   }
 
   const AddReactionData({
-    required this.messageReaction_upsert,
+    required this.messageReactionUpsert,
   });
 }
 
