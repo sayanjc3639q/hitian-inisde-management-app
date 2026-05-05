@@ -55,10 +55,10 @@ class AddCriticismCriticismInsert {
 
 @immutable
 class AddCriticismData {
-  final AddCriticismCriticismInsert criticism_insert;
+  final AddCriticismCriticismInsert criticismInsert;
   AddCriticismData.fromJson(dynamic json):
   
-  criticism_insert = AddCriticismCriticismInsert.fromJson(json['criticism_insert']);
+  criticismInsert = AddCriticismCriticismInsert.fromJson(json['criticism_insert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -69,21 +69,21 @@ class AddCriticismData {
     }
 
     final AddCriticismData otherTyped = other as AddCriticismData;
-    return criticism_insert == otherTyped.criticism_insert;
+    return criticismInsert == otherTyped.criticismInsert;
     
   }
   @override
-  int get hashCode => criticism_insert.hashCode;
+  int get hashCode => criticismInsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['criticism_insert'] = criticism_insert.toJson();
+    json['criticism_insert'] = criticismInsert.toJson();
     return json;
   }
 
   const AddCriticismData({
-    required this.criticism_insert,
+    required this.criticismInsert,
   });
 }
 
