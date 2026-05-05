@@ -46,7 +46,7 @@ class DeleteMessageMessageDelete {
     return json;
   }
 
-  DeleteMessageMessageDelete({
+  const DeleteMessageMessageDelete({
     required this.id,
   });
 }
@@ -82,7 +82,7 @@ class DeleteMessageData {
     return json;
   }
 
-  DeleteMessageData({
+  const DeleteMessageData({
     this.message_delete,
   });
 }
@@ -117,7 +117,7 @@ class DeleteMessageVariables {
     return json;
   }
 
-  DeleteMessageVariables({
+  const DeleteMessageVariables({
     required this.id,
   });
 }

@@ -41,7 +41,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   Set<String> _selectedMessageIds = {};
   Map<String, Map<String, dynamic>> _selectedMessagesData = {};
   bool _isSelectionMode = false;
-  int _lastMessageCount = 0;
 
   Timestamp? _userJoinDate;
 
@@ -383,7 +382,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 8),
@@ -765,7 +764,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     child: LinearProgressIndicator(
                       value: percent,
                       backgroundColor: isMe 
-                        ? Colors.white.withOpacity(0.1) 
+                        ? Colors.white.withValues(alpha: 0.1) 
                         : Colors.grey[200],
                       valueColor: AlwaysStoppedAnimation<Color>(
                         isMyVote 
@@ -962,13 +961,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     bool isSelected = false,
   }) {
     return Container(
-      color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+      color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFF4A0404).withOpacity(0.1),
+            backgroundColor: const Color(0xFF4A0404).withValues(alpha: 0.1),
             child: Text(initials, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF4A0404))),
           ),
           const SizedBox(width: 12),
@@ -1044,7 +1043,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     bool isSelected = false,
   }) {
     return Container(
-      color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+      color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -1118,7 +1117,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         children: counts.entries.map((e) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text('${e.key} ${e.value}', style: const TextStyle(fontSize: 10)),
@@ -1135,7 +1134,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

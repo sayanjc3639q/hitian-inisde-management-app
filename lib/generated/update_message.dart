@@ -3,7 +3,7 @@ part of 'hitian_connector.dart';
 class UpdateMessageVariablesBuilder {
   String id;
   String text;
-  Optional<String> _metadata = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _metadata = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  UpdateMessageVariablesBuilder metadata(String? t) {
    _metadata.value = t;
@@ -52,17 +52,17 @@ class UpdateMessageMessageUpdate {
     return json;
   }
 
-  UpdateMessageMessageUpdate({
+  const UpdateMessageMessageUpdate({
     required this.id,
   });
 }
 
 @immutable
 class UpdateMessageData {
-  final UpdateMessageMessageUpdate? message_update;
+  final UpdateMessageMessageUpdate? messageUpdate;
   UpdateMessageData.fromJson(dynamic json):
   
-  message_update = json['message_update'] == null ? null : UpdateMessageMessageUpdate.fromJson(json['message_update']);
+  messageUpdate = json['message_update'] == null ? null : UpdateMessageMessageUpdate.fromJson(json['message_update']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -73,27 +73,26 @@ class UpdateMessageData {
     }
 
     final UpdateMessageData otherTyped = other as UpdateMessageData;
-    return message_update == otherTyped.message_update;
+    return messageUpdate == otherTyped.messageUpdate;
     
   }
   @override
-  int get hashCode => message_update.hashCode;
+  int get hashCode => messageUpdate.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    if (message_update != null) {
-      json['message_update'] = message_update!.toJson();
+    if (messageUpdate != null) {
+      json['message_update'] = messageUpdate!.toJson();
     }
     return json;
   }
 
-  UpdateMessageData({
-    this.message_update,
+  const UpdateMessageData({
+    this.messageUpdate,
   });
 }
 
-@immutable
 class UpdateMessageVariables {
   final String id;
   final String text;

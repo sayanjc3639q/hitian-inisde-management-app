@@ -2,7 +2,7 @@ part of 'hitian_connector.dart';
 
 class ListMessagesVariablesBuilder {
   String groupId;
-  Optional<Timestamp> _after = Optional.optional((json) => json['after'] = Timestamp.fromJson(json['after']), defaultSerializer);
+  final Optional<Timestamp> _after = Optional.optional((json) => json['after'] = Timestamp.fromJson(json['after']), defaultSerializer);
 
   final FirebaseDataConnect _dataConnect;  ListMessagesVariablesBuilder after(Timestamp? t) {
    _after.value = t;
@@ -79,7 +79,7 @@ class ListMessagesMessages {
     return json;
   }
 
-  ListMessagesMessages({
+  const ListMessagesMessages({
     required this.id,
     required this.text,
     required this.type,
@@ -129,7 +129,7 @@ class ListMessagesMessagesSender {
     return json;
   }
 
-  ListMessagesMessagesSender({
+  const ListMessagesMessagesSender({
     required this.id,
     required this.name,
     this.profilePic,
@@ -169,7 +169,7 @@ class ListMessagesMessagesReactions {
     return json;
   }
 
-  ListMessagesMessagesReactions({
+  const ListMessagesMessagesReactions({
     required this.user,
     required this.emoji,
   });
@@ -208,7 +208,7 @@ class ListMessagesMessagesReactionsUser {
     return json;
   }
 
-  ListMessagesMessagesReactionsUser({
+  const ListMessagesMessagesReactionsUser({
     required this.id,
     required this.name,
   });
@@ -245,12 +245,11 @@ class ListMessagesData {
     return json;
   }
 
-  ListMessagesData({
+  const ListMessagesData({
     required this.messages,
   });
 }
 
-@immutable
 class ListMessagesVariables {
   final String groupId;
   late final Optional<Timestamp>after;

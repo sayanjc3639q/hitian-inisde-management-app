@@ -2,7 +2,7 @@ part of 'hitian_connector.dart';
 
 class UpdateProfilePicVariablesBuilder {
   String id;
-  Optional<String> _url = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _url = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  UpdateProfilePicVariablesBuilder url(String? t) {
    _url.value = t;
@@ -51,17 +51,17 @@ class UpdateProfilePicUserUpdate {
     return json;
   }
 
-  UpdateProfilePicUserUpdate({
+  const UpdateProfilePicUserUpdate({
     required this.id,
   });
 }
 
 @immutable
 class UpdateProfilePicData {
-  final UpdateProfilePicUserUpdate? user_update;
+  final UpdateProfilePicUserUpdate? userUpdate;
   UpdateProfilePicData.fromJson(dynamic json):
   
-  user_update = json['user_update'] == null ? null : UpdateProfilePicUserUpdate.fromJson(json['user_update']);
+  userUpdate = json['user_update'] == null ? null : UpdateProfilePicUserUpdate.fromJson(json['user_update']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -72,27 +72,26 @@ class UpdateProfilePicData {
     }
 
     final UpdateProfilePicData otherTyped = other as UpdateProfilePicData;
-    return user_update == otherTyped.user_update;
+    return userUpdate == otherTyped.userUpdate;
     
   }
   @override
-  int get hashCode => user_update.hashCode;
+  int get hashCode => userUpdate.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    if (user_update != null) {
-      json['user_update'] = user_update!.toJson();
+    if (userUpdate != null) {
+      json['user_update'] = userUpdate!.toJson();
     }
     return json;
   }
 
-  UpdateProfilePicData({
-    this.user_update,
+  const UpdateProfilePicData({
+    this.userUpdate,
   });
 }
 
-@immutable
 class UpdateProfilePicVariables {
   final String id;
   late final Optional<String>url;

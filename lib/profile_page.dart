@@ -282,19 +282,19 @@ class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClient
                       Icons.lightbulb_outline,
                       'My Submitted Ideas',
                       'Track your pitches',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Ideas', uid: _user!.uid))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Ideas', uid: _user.uid))),
                     ),
                     _buildMenuItem(
                       Icons.assignment_outlined,
                       'Completed Tasks',
                       'View history',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Tasks', uid: _user!.uid))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Tasks', uid: _user.uid))),
                     ),
                     _buildMenuItem(
                       Icons.calendar_today_outlined,
                       'Past Events',
                       'Member history',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Events', uid: _user!.uid))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ActivityDetailPage(type: 'Events', uid: _user.uid))),
                     ),
                   ],
                 ),
@@ -357,7 +357,7 @@ class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClient
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedDomain,
+                  initialValue: selectedDomain,
                   decoration: const InputDecoration(labelText: 'Domain'),
                   items: [
                     'Public Relation Management',
@@ -371,7 +371,7 @@ class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClient
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  value: selectedBatch,
+                  initialValue: selectedBatch,
                   decoration: const InputDecoration(labelText: 'Batch'),
                   items: [2022, 2023, 2024, 2025, 2026].map((y) => DropdownMenuItem(value: y, child: Text('Batch $y-${y + 1}', style: GoogleFonts.outfit(fontSize: 14)))).toList(),
                   onChanged: (val) => setDialogState(() => selectedBatch = val!),

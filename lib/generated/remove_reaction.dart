@@ -51,7 +51,7 @@ class RemoveReactionMessageReactionDelete {
     return json;
   }
 
-  RemoveReactionMessageReactionDelete({
+  const RemoveReactionMessageReactionDelete({
     required this.messageId,
     required this.userId,
   });
@@ -88,7 +88,7 @@ class RemoveReactionData {
     return json;
   }
 
-  RemoveReactionData({
+  const RemoveReactionData({
     this.messageReaction_delete,
   });
 }
@@ -127,7 +127,7 @@ class RemoveReactionVariables {
     return json;
   }
 
-  RemoveReactionVariables({
+  const RemoveReactionVariables({
     required this.messageId,
     required this.userId,
   });

@@ -18,7 +18,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
   bool get wantKeepAlive => true;
   String _selectedFilter = 'All Events';
   final User? _user = FirebaseAuth.instance.currentUser;
-  bool _isAdmin = false;
+  // final bool _isAdmin = false; // Removed in favor of isAdmin from UserService
   Stream<QuerySnapshot>? _eventsStream;
 
   @override
@@ -168,7 +168,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildEventCard(events[index]),
+                          child: _buildEventCard(events[index], isAdmin),
                         );
                       },
                     );
@@ -177,7 +177,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
               ),
             ],
           ),
-          floatingActionButton: _isAdmin 
+          floatingActionButton: isAdmin 
             ? FloatingActionButton.extended(
                 heroTag: 'events_fab_unique',
                 onPressed: _showAddEventDialog,
@@ -194,19 +194,6 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
     );
   }
 
-  Stream<QuerySnapshot> _getEventsStream() {
-    var query = FirebaseFirestore.instance.collection('events').orderBy('dateTime', descending: false);
-    
-    if (_selectedFilter == 'Shoots') {
-      query = query.where('category', isEqualTo: 'Shoot');
-    } else if (_selectedFilter == 'Meetings') {
-      query = query.where('category', isEqualTo: 'Meeting');
-    } else if (_selectedFilter == 'Deadlines') {
-      query = query.where('category', isEqualTo: 'Deadline');
-    }
-    
-    return query.snapshots();
-  }
 
   void _showAddEventDialog() {
     final titleController = TextEditingController();
@@ -250,6 +237,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
                       onPressed: () async {
                         final picked = await showDatePicker(context: context, initialDate: selectedDate, firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365)));
                         if (picked != null) {
+                          if (!context.mounted) return;
                           final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
                           if (time != null) {
                             setModalState(() {
@@ -267,7 +255,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: category,
+                initialValue: category,
                 decoration: InputDecoration(filled: true, fillColor: Colors.grey[100], border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)),
                 items: ['Shoot', 'Meeting', 'Deadline'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (v) => setModalState(() => category = v!),
@@ -321,7 +309,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
     );
   }
 
-  Widget _buildEventCard(DocumentSnapshot doc) {
+  Widget _buildEventCard(DocumentSnapshot doc, bool isAdmin) {
     final data = doc.data() as Map<String, dynamic>;
     final category = data['category'] ?? 'Event';
     final dateTime = (data['dateTime'] as Timestamp).toDate();
@@ -329,11 +317,11 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
     final bool isAttending = attendees.contains(_user?.uid);
 
     if (category == 'Deadline') {
-      return _buildDeadlineCard(doc, dateTime, data['title'] ?? '', DateFormat('h:mm a').format(dateTime));
+      return _buildDeadlineCard(doc, dateTime, data['title'] ?? '', DateFormat('h:mm a').format(dateTime), isAdmin);
     }
 
     if (category == 'Meeting') {
-      return _buildMeetingCard(doc, data['title'] ?? '', data['description'] ?? '', DateFormat('MMM d').format(dateTime), DateFormat('h:mm a').format(dateTime), data['location'] ?? 'No Location', Icons.groups, const Color(0xFF1A237E));
+      return _buildMeetingCard(doc, data['title'] ?? '', data['description'] ?? '', DateFormat('MMM d').format(dateTime), DateFormat('h:mm a').format(dateTime), data['location'] ?? 'No Location', Icons.groups, const Color(0xFF1A237E), isAdmin);
     }
 
     // Default: Promoted/Shoot style
@@ -342,7 +330,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +348,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
                       decoration: BoxDecoration(color: const Color(0xFFFFD56B), borderRadius: BorderRadius.circular(8)),
                       child: Text(category.toUpperCase(), style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF4A0404))),
                     ),
-                    if (_isAdmin)
+                    if (isAdmin)
                       IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20), onPressed: () => doc.reference.delete(), visualDensity: VisualDensity.compact),
                   ],
                 ),
@@ -409,7 +397,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
     );
   }
 
-  Widget _buildDeadlineCard(DocumentSnapshot doc, DateTime dateTime, String title, String time) {
+  Widget _buildDeadlineCard(DocumentSnapshot doc, DateTime dateTime, String title, String time, bool isAdmin) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(color: const Color(0xFFFFEEEE), borderRadius: BorderRadius.circular(20)),
@@ -422,7 +410,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
             ],
           ),
           const SizedBox(width: 20),
-          Container(width: 1, height: 40, color: const Color(0xFF4A0404).withOpacity(0.2)),
+          Container(width: 1, height: 40, color: const Color(0xFF4A0404).withValues(alpha: 0.2)),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -430,18 +418,18 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
               children: [
                 Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF4A0404))),
                 const SizedBox(height: 4),
-                Text('Deadline: $time', style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF4A0404).withOpacity(0.7))),
+                Text('Deadline: $time', style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF4A0404).withValues(alpha: 0.7))),
               ],
             ),
           ),
-          if (_isAdmin)
+          if (isAdmin)
             IconButton(icon: const Icon(Icons.delete_outline, color: Color(0xFF4A0404), size: 20), onPressed: () => doc.reference.delete()),
         ],
       ),
     );
   }
 
-  Widget _buildMeetingCard(DocumentSnapshot doc, String title, String team, String date, String time, String location, IconData icon, Color iconBg) {
+  Widget _buildMeetingCard(DocumentSnapshot doc, String title, String team, String date, String time, String location, IconData icon, Color iconBg, bool isAdmin) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey[200]!)),
@@ -460,7 +448,7 @@ class _EventsPageState extends State<EventsPage> with AutomaticKeepAliveClientMi
                   ],
                 ),
               ),
-              if (_isAdmin)
+              if (isAdmin)
                 IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20), onPressed: () => doc.reference.delete()),
             ],
           ),

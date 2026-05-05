@@ -88,7 +88,7 @@ class GetUserUser {
     return json;
   }
 
-  GetUserUser({
+  const GetUserUser({
     required this.id,
     required this.name,
     required this.email,
@@ -132,7 +132,7 @@ class GetUserData {
     return json;
   }
 
-  GetUserData({
+  const GetUserData({
     this.user,
   });
 }
@@ -167,7 +167,7 @@ class GetUserVariables {
     return json;
   }
 
-  GetUserVariables({
+  const GetUserVariables({
     required this.id,
   });
 }

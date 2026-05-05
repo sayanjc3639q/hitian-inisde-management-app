@@ -46,7 +46,7 @@ class DeleteIdeaIdeaDelete {
     return json;
   }
 
-  DeleteIdeaIdeaDelete({
+  const DeleteIdeaIdeaDelete({
     required this.id,
   });
 }
@@ -82,7 +82,7 @@ class DeleteIdeaData {
     return json;
   }
 
-  DeleteIdeaData({
+  const DeleteIdeaData({
     this.idea_delete,
   });
 }
@@ -117,7 +117,7 @@ class DeleteIdeaVariables {
     return json;
   }
 
-  DeleteIdeaVariables({
+  const DeleteIdeaVariables({
     required this.id,
   });
 }

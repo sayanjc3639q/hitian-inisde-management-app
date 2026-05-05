@@ -52,7 +52,7 @@ class AddReactionMessageReactionUpsert {
     return json;
   }
 
-  AddReactionMessageReactionUpsert({
+  const AddReactionMessageReactionUpsert({
     required this.messageId,
     required this.userId,
   });
@@ -87,7 +87,7 @@ class AddReactionData {
     return json;
   }
 
-  AddReactionData({
+  const AddReactionData({
     required this.messageReaction_upsert,
   });
 }
@@ -130,7 +130,7 @@ class AddReactionVariables {
     return json;
   }
 
-  AddReactionVariables({
+  const AddReactionVariables({
     required this.messageId,
     required this.userId,
     required this.emoji,

@@ -4,9 +4,9 @@ class UpsertUserVariablesBuilder {
   String id;
   String name;
   String email;
-  Optional<String> _rollNumber = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _domain = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<int> _batch = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _rollNumber = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _domain = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<int> _batch = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  UpsertUserVariablesBuilder rollNumber(String? t) {
    _rollNumber.value = t;
@@ -63,17 +63,16 @@ class UpsertUserUserUpsert {
     return json;
   }
 
-  UpsertUserUserUpsert({
+  const UpsertUserUserUpsert({
     required this.id,
   });
 }
 
-@immutable
 class UpsertUserData {
-  final UpsertUserUserUpsert user_upsert;
+  final UpsertUserUserUpsert userUpsert;
   UpsertUserData.fromJson(dynamic json):
   
-  user_upsert = UpsertUserUserUpsert.fromJson(json['user_upsert']);
+  userUpsert = UpsertUserUserUpsert.fromJson(json['user_upsert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -84,25 +83,24 @@ class UpsertUserData {
     }
 
     final UpsertUserData otherTyped = other as UpsertUserData;
-    return user_upsert == otherTyped.user_upsert;
+    return userUpsert == otherTyped.userUpsert;
     
   }
   @override
-  int get hashCode => user_upsert.hashCode;
+  int get hashCode => userUpsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['user_upsert'] = user_upsert.toJson();
+    json['user_upsert'] = userUpsert.toJson();
     return json;
   }
 
   UpsertUserData({
-    required this.user_upsert,
+    required this.userUpsert,
   });
 }
 
-@immutable
 class UpsertUserVariables {
   final String id;
   final String name;

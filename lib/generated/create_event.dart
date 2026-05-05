@@ -3,8 +3,8 @@ part of 'hitian_connector.dart';
 class CreateEventVariablesBuilder {
   String title;
   String category;
-  Optional<String> _location = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _link = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _location = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _link = Optional.optional(nativeFromJson, nativeToJson);
   Timestamp dateTime;
   String senderId;
   String groupId;
@@ -60,17 +60,16 @@ class CreateEventEventInsert {
     return json;
   }
 
-  CreateEventEventInsert({
+  const CreateEventEventInsert({
     required this.id,
   });
 }
 
-@immutable
 class CreateEventData {
-  final CreateEventEventInsert event_insert;
+  final CreateEventEventInsert eventInsert;
   CreateEventData.fromJson(dynamic json):
   
-  event_insert = CreateEventEventInsert.fromJson(json['event_insert']);
+  eventInsert = CreateEventEventInsert.fromJson(json['event_insert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -81,25 +80,24 @@ class CreateEventData {
     }
 
     final CreateEventData otherTyped = other as CreateEventData;
-    return event_insert == otherTyped.event_insert;
+    return eventInsert == otherTyped.eventInsert;
     
   }
   @override
-  int get hashCode => event_insert.hashCode;
+  int get hashCode => eventInsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['event_insert'] = event_insert.toJson();
+    json['event_insert'] = eventInsert.toJson();
     return json;
   }
 
   CreateEventData({
-    required this.event_insert,
+    required this.eventInsert,
   });
 }
 
-@immutable
 class CreateEventVariables {
   final String title;
   final String category;

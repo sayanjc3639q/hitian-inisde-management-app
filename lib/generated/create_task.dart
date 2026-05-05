@@ -50,7 +50,7 @@ class CreateTaskTaskInsert {
     return json;
   }
 
-  CreateTaskTaskInsert({
+  const CreateTaskTaskInsert({
     required this.id,
   });
 }
@@ -84,7 +84,7 @@ class CreateTaskData {
     return json;
   }
 
-  CreateTaskData({
+  const CreateTaskData({
     required this.task_insert,
   });
 }
@@ -135,7 +135,7 @@ class CreateTaskVariables {
     return json;
   }
 
-  CreateTaskVariables({
+  const CreateTaskVariables({
     required this.text,
     required this.assigneeId,
     required this.senderId,

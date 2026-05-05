@@ -1,7 +1,7 @@
 part of 'hitian_connector.dart';
 
 class ListUsersVariablesBuilder {
-  Optional<String> _domain = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _domain = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;
   ListUsersVariablesBuilder domain(String? t) {
@@ -67,7 +67,7 @@ class ListUsersUsers {
     return json;
   }
 
-  ListUsersUsers({
+  const ListUsersUsers({
     required this.id,
     required this.name,
     this.domain,
@@ -106,12 +106,11 @@ class ListUsersData {
     return json;
   }
 
-  ListUsersData({
+  const ListUsersData({
     required this.users,
   });
 }
 
-@immutable
 class ListUsersVariables {
   late final Optional<String>domain;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')

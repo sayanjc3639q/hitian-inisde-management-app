@@ -1,7 +1,7 @@
 part of 'hitian_connector.dart';
 
 class ListEventsByGroupVariablesBuilder {
-  Optional<List<String>> _groupIds = Optional.optional(listDeserializer(nativeFromJson), listSerializer(nativeToJson));
+  final Optional<List<String>> _groupIds = Optional.optional(listDeserializer(nativeFromJson), listSerializer(nativeToJson));
 
   final FirebaseDataConnect _dataConnect;
   ListEventsByGroupVariablesBuilder groupIds(List<String>? t) {
@@ -87,7 +87,7 @@ class ListEventsByGroupEvents {
     return json;
   }
 
-  ListEventsByGroupEvents({
+  const ListEventsByGroupEvents({
     required this.id,
     required this.title,
     required this.category,
@@ -133,7 +133,7 @@ class ListEventsByGroupEventsSender {
     return json;
   }
 
-  ListEventsByGroupEventsSender({
+  const ListEventsByGroupEventsSender({
     required this.id,
     required this.name,
   });
@@ -170,12 +170,11 @@ class ListEventsByGroupData {
     return json;
   }
 
-  ListEventsByGroupData({
+  const ListEventsByGroupData({
     required this.events,
   });
 }
 
-@immutable
 class ListEventsByGroupVariables {
   late final Optional<List<String>>groupIds;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')

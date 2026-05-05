@@ -61,7 +61,7 @@ class ListAllUsersUsers {
     return json;
   }
 
-  ListAllUsersUsers({
+  const ListAllUsersUsers({
     required this.id,
     required this.name,
     this.domain,
@@ -100,7 +100,7 @@ class ListAllUsersData {
     return json;
   }
 
-  ListAllUsersData({
+  const ListAllUsersData({
     required this.users,
   });
 }

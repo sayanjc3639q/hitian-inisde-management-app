@@ -1,8 +1,8 @@
 part of 'hitian_connector.dart';
 
 class ListIdeasVariablesBuilder {
-  Optional<String> _category = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _authorId = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _category = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _authorId = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;
   ListIdeasVariablesBuilder category(String? t) {
@@ -36,8 +36,8 @@ class ListIdeasIdeas {
   final String status;
   final Timestamp timestamp;
   final ListIdeasIdeasAuthor author;
-  final List<ListIdeasIdeasVotesOnIdea> votes_on_idea;
-  final List<ListIdeasIdeasCriticismsOnIdea> criticisms_on_idea;
+  final List<ListIdeasIdeasVotesOnIdea> votesOnIdea;
+  final List<ListIdeasIdeasCriticismsOnIdea> criticismsOnIdea;
   ListIdeasIdeas.fromJson(dynamic json):
   
   id = nativeFromJson<String>(json['id']),
@@ -47,10 +47,10 @@ class ListIdeasIdeas {
   status = nativeFromJson<String>(json['status']),
   timestamp = Timestamp.fromJson(json['timestamp']),
   author = ListIdeasIdeasAuthor.fromJson(json['author']),
-  votes_on_idea = (json['votes_on_idea'] as List<dynamic>)
+  votesOnIdea = (json['votes_on_idea'] as List<dynamic>)
         .map((e) => ListIdeasIdeasVotesOnIdea.fromJson(e))
         .toList(),
-  criticisms_on_idea = (json['criticisms_on_idea'] as List<dynamic>)
+  criticismsOnIdea = (json['criticisms_on_idea'] as List<dynamic>)
         .map((e) => ListIdeasIdeasCriticismsOnIdea.fromJson(e))
         .toList();
   @override
@@ -70,12 +70,12 @@ class ListIdeasIdeas {
     status == otherTyped.status && 
     timestamp == otherTyped.timestamp && 
     author == otherTyped.author && 
-    votes_on_idea == otherTyped.votes_on_idea && 
-    criticisms_on_idea == otherTyped.criticisms_on_idea;
+    votesOnIdea == otherTyped.votesOnIdea && 
+    criticismsOnIdea == otherTyped.criticismsOnIdea;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, title.hashCode, description.hashCode, category.hashCode, status.hashCode, timestamp.hashCode, author.hashCode, votes_on_idea.hashCode, criticisms_on_idea.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, title.hashCode, description.hashCode, category.hashCode, status.hashCode, timestamp.hashCode, author.hashCode, votesOnIdea.hashCode, criticismsOnIdea.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -87,12 +87,12 @@ class ListIdeasIdeas {
     json['status'] = nativeToJson<String>(status);
     json['timestamp'] = timestamp.toJson();
     json['author'] = author.toJson();
-    json['votes_on_idea'] = votes_on_idea.map((e) => e.toJson()).toList();
-    json['criticisms_on_idea'] = criticisms_on_idea.map((e) => e.toJson()).toList();
+    json['votes_on_idea'] = votesOnIdea.map((e) => e.toJson()).toList();
+    json['criticisms_on_idea'] = criticismsOnIdea.map((e) => e.toJson()).toList();
     return json;
   }
 
-  ListIdeasIdeas({
+  const ListIdeasIdeas({
     required this.id,
     required this.title,
     required this.description,
@@ -100,8 +100,8 @@ class ListIdeasIdeas {
     required this.status,
     required this.timestamp,
     required this.author,
-    required this.votes_on_idea,
-    required this.criticisms_on_idea,
+    required this.votesOnIdea,
+    required this.criticismsOnIdea,
   });
 }
 
@@ -144,7 +144,7 @@ class ListIdeasIdeasAuthor {
     return json;
   }
 
-  ListIdeasIdeasAuthor({
+  const ListIdeasIdeasAuthor({
     required this.id,
     required this.name,
     this.profilePic,
@@ -184,7 +184,7 @@ class ListIdeasIdeasVotesOnIdea {
     return json;
   }
 
-  ListIdeasIdeasVotesOnIdea({
+  const ListIdeasIdeasVotesOnIdea({
     required this.type,
     required this.userId,
   });
@@ -231,7 +231,7 @@ class ListIdeasIdeasCriticismsOnIdea {
     return json;
   }
 
-  ListIdeasIdeasCriticismsOnIdea({
+  const ListIdeasIdeasCriticismsOnIdea({
     required this.id,
     required this.content,
     required this.timestamp,
@@ -274,7 +274,7 @@ class ListIdeasIdeasCriticismsOnIdeaUser {
     return json;
   }
 
-  ListIdeasIdeasCriticismsOnIdeaUser({
+  const ListIdeasIdeasCriticismsOnIdeaUser({
     required this.name,
     this.profilePic,
   });
@@ -311,12 +311,11 @@ class ListIdeasData {
     return json;
   }
 
-  ListIdeasData({
+  const ListIdeasData({
     required this.ideas,
   });
 }
 
-@immutable
 class ListIdeasVariables {
   late final Optional<String>category;
   late final Optional<String>authorId;

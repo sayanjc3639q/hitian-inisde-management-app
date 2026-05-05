@@ -58,7 +58,7 @@ class ListCriticismsCriticisms {
     return json;
   }
 
-  ListCriticismsCriticisms({
+  const ListCriticismsCriticisms({
     required this.id,
     required this.content,
     required this.timestamp,
@@ -105,7 +105,7 @@ class ListCriticismsCriticismsUser {
     return json;
   }
 
-  ListCriticismsCriticismsUser({
+  const ListCriticismsCriticismsUser({
     required this.id,
     required this.name,
     this.profilePic,
@@ -143,7 +143,7 @@ class ListCriticismsData {
     return json;
   }
 
-  ListCriticismsData({
+  const ListCriticismsData({
     required this.criticisms,
   });
 }
@@ -178,7 +178,7 @@ class ListCriticismsVariables {
     return json;
   }
 
-  ListCriticismsVariables({
+  const ListCriticismsVariables({
     required this.ideaId,
   });
 }

@@ -190,7 +190,7 @@ class _SettingsPageState extends State<SettingsPage> {
           subtitle,
           style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[500]),
         ),
-        activeColor: const Color(0xFF4A0404),
+        activeThumbColor: const Color(0xFF4A0404),
         value: value,
         onChanged: onChanged,
       ),

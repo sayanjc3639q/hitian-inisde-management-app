@@ -3,7 +3,7 @@ part of 'hitian_connector.dart';
 class UpdateTaskStatusVariablesBuilder {
   String id;
   String status;
-  Optional<Timestamp> _timestamp = Optional.optional((json) => json['timestamp'] = Timestamp.fromJson(json['timestamp']), defaultSerializer);
+  final Optional<Timestamp> _timestamp = Optional.optional((json) => json['timestamp'] = Timestamp.fromJson(json['timestamp']), defaultSerializer);
 
   final FirebaseDataConnect _dataConnect;  UpdateTaskStatusVariablesBuilder timestamp(Timestamp? t) {
    _timestamp.value = t;
@@ -52,17 +52,17 @@ class UpdateTaskStatusTaskUpdate {
     return json;
   }
 
-  UpdateTaskStatusTaskUpdate({
+  const UpdateTaskStatusTaskUpdate({
     required this.id,
   });
 }
 
 @immutable
 class UpdateTaskStatusData {
-  final UpdateTaskStatusTaskUpdate? task_update;
+  final UpdateTaskStatusTaskUpdate? taskUpdate;
   UpdateTaskStatusData.fromJson(dynamic json):
   
-  task_update = json['task_update'] == null ? null : UpdateTaskStatusTaskUpdate.fromJson(json['task_update']);
+  taskUpdate = json['task_update'] == null ? null : UpdateTaskStatusTaskUpdate.fromJson(json['task_update']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -73,27 +73,26 @@ class UpdateTaskStatusData {
     }
 
     final UpdateTaskStatusData otherTyped = other as UpdateTaskStatusData;
-    return task_update == otherTyped.task_update;
+    return taskUpdate == otherTyped.taskUpdate;
     
   }
   @override
-  int get hashCode => task_update.hashCode;
+  int get hashCode => taskUpdate.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    if (task_update != null) {
-      json['task_update'] = task_update!.toJson();
+    if (taskUpdate != null) {
+      json['task_update'] = taskUpdate!.toJson();
     }
     return json;
   }
 
-  UpdateTaskStatusData({
-    this.task_update,
+  const UpdateTaskStatusData({
+    this.taskUpdate,
   });
 }
 
-@immutable
 class UpdateTaskStatusVariables {
   final String id;
   final String status;

@@ -1,8 +1,8 @@
 part of 'hitian_connector.dart';
 
 class ListTasksVariablesBuilder {
-  Optional<String> _assigneeId = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _status = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _assigneeId = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _status = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;
   ListTasksVariablesBuilder assigneeId(String? t) {
@@ -84,7 +84,7 @@ class ListTasksTasks {
     return json;
   }
 
-  ListTasksTasks({
+  const ListTasksTasks({
     required this.id,
     required this.text,
     required this.deadline,
@@ -129,7 +129,7 @@ class ListTasksTasksAssignee {
     return json;
   }
 
-  ListTasksTasksAssignee({
+  const ListTasksTasksAssignee({
     required this.id,
     required this.name,
   });
@@ -168,7 +168,7 @@ class ListTasksTasksSender {
     return json;
   }
 
-  ListTasksTasksSender({
+  const ListTasksTasksSender({
     required this.id,
     required this.name,
   });
@@ -205,12 +205,11 @@ class ListTasksData {
     return json;
   }
 
-  ListTasksData({
+  const ListTasksData({
     required this.tasks,
   });
 }
 
-@immutable
 class ListTasksVariables {
   late final Optional<String>assigneeId;
   late final Optional<String>status;

@@ -321,7 +321,7 @@ class _IdeasPageState extends State<IdeasPage> with AutomaticKeepAliveClientMixi
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: category,
+              initialValue: category,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[100],

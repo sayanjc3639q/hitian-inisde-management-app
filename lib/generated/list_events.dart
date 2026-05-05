@@ -1,7 +1,7 @@
 part of 'hitian_connector.dart';
 
 class ListEventsVariablesBuilder {
-  Optional<String> _category = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _category = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;
   ListEventsVariablesBuilder category(String? t) {
@@ -93,7 +93,7 @@ class ListEventsEvents {
     return json;
   }
 
-  ListEventsEvents({
+  const ListEventsEvents({
     required this.id,
     required this.title,
     required this.category,
@@ -140,7 +140,7 @@ class ListEventsEventsSender {
     return json;
   }
 
-  ListEventsEventsSender({
+  const ListEventsEventsSender({
     required this.id,
     required this.name,
   });
@@ -175,7 +175,7 @@ class ListEventsEventsAttendees {
     return json;
   }
 
-  ListEventsEventsAttendees({
+  const ListEventsEventsAttendees({
     required this.user,
   });
 }
@@ -213,7 +213,7 @@ class ListEventsEventsAttendeesUser {
     return json;
   }
 
-  ListEventsEventsAttendeesUser({
+  const ListEventsEventsAttendeesUser({
     required this.id,
     required this.name,
   });
@@ -250,12 +250,11 @@ class ListEventsData {
     return json;
   }
 
-  ListEventsData({
+  const ListEventsData({
     required this.events,
   });
 }
 
-@immutable
 class ListEventsVariables {
   late final Optional<String>category;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')

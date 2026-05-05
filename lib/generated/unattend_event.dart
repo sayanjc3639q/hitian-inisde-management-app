@@ -51,7 +51,7 @@ class UnattendEventEventAttendeeDelete {
     return json;
   }
 
-  UnattendEventEventAttendeeDelete({
+  const UnattendEventEventAttendeeDelete({
     required this.eventId,
     required this.userId,
   });
@@ -88,7 +88,7 @@ class UnattendEventData {
     return json;
   }
 
-  UnattendEventData({
+  const UnattendEventData({
     this.eventAttendee_delete,
   });
 }
@@ -127,7 +127,7 @@ class UnattendEventVariables {
     return json;
   }
 
-  UnattendEventVariables({
+  const UnattendEventVariables({
     required this.eventId,
     required this.userId,
   });

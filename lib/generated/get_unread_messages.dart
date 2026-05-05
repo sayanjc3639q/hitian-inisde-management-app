@@ -51,7 +51,7 @@ class GetUnreadMessagesMessages {
     return json;
   }
 
-  GetUnreadMessagesMessages({
+  const GetUnreadMessagesMessages({
     required this.id,
     required this.senderId,
   });
@@ -88,7 +88,7 @@ class GetUnreadMessagesData {
     return json;
   }
 
-  GetUnreadMessagesData({
+  const GetUnreadMessagesData({
     required this.messages,
   });
 }
@@ -127,7 +127,7 @@ class GetUnreadMessagesVariables {
     return json;
   }
 
-  GetUnreadMessagesVariables({
+  const GetUnreadMessagesVariables({
     required this.groupId,
     required this.lastRead,
   });

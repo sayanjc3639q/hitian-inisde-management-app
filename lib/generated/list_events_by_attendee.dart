@@ -46,7 +46,7 @@ class ListEventsByAttendeeEventAttendees {
     return json;
   }
 
-  ListEventsByAttendeeEventAttendees({
+  const ListEventsByAttendeeEventAttendees({
     required this.event,
   });
 }
@@ -108,7 +108,7 @@ class ListEventsByAttendeeEventAttendeesEvent {
     return json;
   }
 
-  ListEventsByAttendeeEventAttendeesEvent({
+  const ListEventsByAttendeeEventAttendeesEvent({
     required this.id,
     required this.title,
     this.location,
@@ -150,7 +150,7 @@ class ListEventsByAttendeeData {
     return json;
   }
 
-  ListEventsByAttendeeData({
+  const ListEventsByAttendeeData({
     required this.eventAttendees,
   });
 }
@@ -185,7 +185,7 @@ class ListEventsByAttendeeVariables {
     return json;
   }
 
-  ListEventsByAttendeeVariables({
+  const ListEventsByAttendeeVariables({
     required this.userId,
   });
 }

@@ -47,7 +47,7 @@ class UpdateIdeaStatusIdeaUpdate {
     return json;
   }
 
-  UpdateIdeaStatusIdeaUpdate({
+  const UpdateIdeaStatusIdeaUpdate({
     required this.id,
   });
 }
@@ -83,7 +83,7 @@ class UpdateIdeaStatusData {
     return json;
   }
 
-  UpdateIdeaStatusData({
+  const UpdateIdeaStatusData({
     this.idea_update,
   });
 }
@@ -122,7 +122,7 @@ class UpdateIdeaStatusVariables {
     return json;
   }
 
-  UpdateIdeaStatusVariables({
+  const UpdateIdeaStatusVariables({
     required this.id,
     required this.status,
   });

@@ -47,7 +47,7 @@ class GetLastReadChatLastRead {
     return json;
   }
 
-  GetLastReadChatLastRead({
+  const GetLastReadChatLastRead({
     required this.timestamp,
   });
 }
@@ -83,7 +83,7 @@ class GetLastReadData {
     return json;
   }
 
-  GetLastReadData({
+  const GetLastReadData({
     this.chatLastRead,
   });
 }
@@ -122,7 +122,7 @@ class GetLastReadVariables {
     return json;
   }
 
-  GetLastReadVariables({
+  const GetLastReadVariables({
     required this.groupId,
     required this.userId,
   });

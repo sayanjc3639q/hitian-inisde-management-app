@@ -52,7 +52,7 @@ class VoteIdeaVoteUpsert {
     return json;
   }
 
-  VoteIdeaVoteUpsert({
+  const VoteIdeaVoteUpsert({
     required this.ideaId,
     required this.userId,
   });
@@ -87,7 +87,7 @@ class VoteIdeaData {
     return json;
   }
 
-  VoteIdeaData({
+  const VoteIdeaData({
     required this.vote_upsert,
   });
 }
@@ -130,7 +130,7 @@ class VoteIdeaVariables {
     return json;
   }
 
-  VoteIdeaVariables({
+  const VoteIdeaVariables({
     required this.ideaId,
     required this.userId,
     required this.type,

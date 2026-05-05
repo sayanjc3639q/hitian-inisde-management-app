@@ -49,7 +49,7 @@ class CreateIdeaIdeaInsert {
     return json;
   }
 
-  CreateIdeaIdeaInsert({
+  const CreateIdeaIdeaInsert({
     required this.id,
   });
 }
@@ -83,7 +83,7 @@ class CreateIdeaData {
     return json;
   }
 
-  CreateIdeaData({
+  const CreateIdeaData({
     required this.idea_insert,
   });
 }
@@ -130,7 +130,7 @@ class CreateIdeaVariables {
     return json;
   }
 
-  CreateIdeaVariables({
+  const CreateIdeaVariables({
     required this.title,
     required this.description,
     required this.category,

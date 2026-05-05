@@ -51,7 +51,7 @@ class AttendEventEventAttendeeInsert {
     return json;
   }
 
-  AttendEventEventAttendeeInsert({
+  const AttendEventEventAttendeeInsert({
     required this.eventId,
     required this.userId,
   });
@@ -86,7 +86,7 @@ class AttendEventData {
     return json;
   }
 
-  AttendEventData({
+  const AttendEventData({
     required this.eventAttendee_insert,
   });
 }
@@ -125,7 +125,7 @@ class AttendEventVariables {
     return json;
   }
 
-  AttendEventVariables({
+  const AttendEventVariables({
     required this.eventId,
     required this.userId,
   });

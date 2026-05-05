@@ -48,7 +48,7 @@ class AddCriticismCriticismInsert {
     return json;
   }
 
-  AddCriticismCriticismInsert({
+  const AddCriticismCriticismInsert({
     required this.id,
   });
 }
@@ -82,7 +82,7 @@ class AddCriticismData {
     return json;
   }
 
-  AddCriticismData({
+  const AddCriticismData({
     required this.criticism_insert,
   });
 }
@@ -125,7 +125,7 @@ class AddCriticismVariables {
     return json;
   }
 
-  AddCriticismVariables({
+  const AddCriticismVariables({
     required this.ideaId,
     required this.userId,
     required this.content,

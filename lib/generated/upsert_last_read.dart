@@ -51,7 +51,7 @@ class UpsertLastReadChatLastReadUpsert {
     return json;
   }
 
-  UpsertLastReadChatLastReadUpsert({
+  const UpsertLastReadChatLastReadUpsert({
     required this.userId,
     required this.groupId,
   });
@@ -86,7 +86,7 @@ class UpsertLastReadData {
     return json;
   }
 
-  UpsertLastReadData({
+  const UpsertLastReadData({
     required this.chatLastRead_upsert,
   });
 }
@@ -125,7 +125,7 @@ class UpsertLastReadVariables {
     return json;
   }
 
-  UpsertLastReadVariables({
+  const UpsertLastReadVariables({
     required this.groupId,
     required this.userId,
   });

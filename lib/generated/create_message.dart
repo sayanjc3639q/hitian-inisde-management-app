@@ -4,8 +4,8 @@ class CreateMessageVariablesBuilder {
   String groupId;
   String senderId;
   String text;
-  Optional<String> _type = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _metadata = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _type = Optional.optional(nativeFromJson, nativeToJson);
+  final Optional<String> _metadata = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  CreateMessageVariablesBuilder type(String? t) {
    _type.value = t;
@@ -58,17 +58,16 @@ class CreateMessageMessageInsert {
     return json;
   }
 
-  CreateMessageMessageInsert({
+  const CreateMessageMessageInsert({
     required this.id,
   });
 }
 
-@immutable
 class CreateMessageData {
-  final CreateMessageMessageInsert message_insert;
+  final CreateMessageMessageInsert messageInsert;
   CreateMessageData.fromJson(dynamic json):
   
-  message_insert = CreateMessageMessageInsert.fromJson(json['message_insert']);
+  messageInsert = CreateMessageMessageInsert.fromJson(json['message_insert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -79,25 +78,24 @@ class CreateMessageData {
     }
 
     final CreateMessageData otherTyped = other as CreateMessageData;
-    return message_insert == otherTyped.message_insert;
+    return messageInsert == otherTyped.messageInsert;
     
   }
   @override
-  int get hashCode => message_insert.hashCode;
+  int get hashCode => messageInsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['message_insert'] = message_insert.toJson();
+    json['message_insert'] = messageInsert.toJson();
     return json;
   }
 
   CreateMessageData({
-    required this.message_insert,
+    required this.messageInsert,
   });
 }
 
-@immutable
 class CreateMessageVariables {
   final String groupId;
   final String senderId;
