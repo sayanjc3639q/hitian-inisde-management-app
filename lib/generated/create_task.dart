@@ -57,10 +57,10 @@ class CreateTaskTaskInsert {
 
 @immutable
 class CreateTaskData {
-  final CreateTaskTaskInsert task_insert;
+  final CreateTaskTaskInsert taskInsert;
   CreateTaskData.fromJson(dynamic json):
   
-  task_insert = CreateTaskTaskInsert.fromJson(json['task_insert']);
+  taskInsert = CreateTaskTaskInsert.fromJson(json['task_insert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -71,21 +71,21 @@ class CreateTaskData {
     }
 
     final CreateTaskData otherTyped = other as CreateTaskData;
-    return task_insert == otherTyped.task_insert;
+    return taskInsert == otherTyped.taskInsert;
     
   }
   @override
-  int get hashCode => task_insert.hashCode;
+  int get hashCode => taskInsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['task_insert'] = task_insert.toJson();
+    json['task_insert'] = taskInsert.toJson();
     return json;
   }
 
   const CreateTaskData({
-    required this.task_insert,
+    required this.taskInsert,
   });
 }
 

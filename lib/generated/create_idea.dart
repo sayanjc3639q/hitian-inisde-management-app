@@ -56,10 +56,10 @@ class CreateIdeaIdeaInsert {
 
 @immutable
 class CreateIdeaData {
-  final CreateIdeaIdeaInsert idea_insert;
+  final CreateIdeaIdeaInsert ideaInsert;
   CreateIdeaData.fromJson(dynamic json):
   
-  idea_insert = CreateIdeaIdeaInsert.fromJson(json['idea_insert']);
+  ideaInsert = CreateIdeaIdeaInsert.fromJson(json['idea_insert']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -70,21 +70,21 @@ class CreateIdeaData {
     }
 
     final CreateIdeaData otherTyped = other as CreateIdeaData;
-    return idea_insert == otherTyped.idea_insert;
+    return ideaInsert == otherTyped.ideaInsert;
     
   }
   @override
-  int get hashCode => idea_insert.hashCode;
+  int get hashCode => ideaInsert.hashCode;
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['idea_insert'] = idea_insert.toJson();
+    json['idea_insert'] = ideaInsert.toJson();
     return json;
   }
 
   const CreateIdeaData({
-    required this.idea_insert,
+    required this.ideaInsert,
   });
 }
 
